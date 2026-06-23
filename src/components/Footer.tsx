@@ -20,7 +20,7 @@ export default function Footer() {
               <span className="h-2 w-2 rounded-full bg-gold-400"></span>
             </Link>
             <p className="font-sans text-sm leading-relaxed text-cream-300">
-              Your premium international shopping concierge. We buy from premium stores in the US, UK, and Europe, and deliver straight to your doorstep in Nigeria, customs cleared.
+              Your premium international shopping concierge. We buy from premium stores in the US, UK, and Europe, and coordinate delivery to your doorstep in Nigeria with import/customs support.
             </p>
           </div>
 

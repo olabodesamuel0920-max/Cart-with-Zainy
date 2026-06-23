@@ -58,8 +58,8 @@ export default function FAQ() {
     {
       id: "shp-2",
       category: "Shipping & Customs",
-      q: "Who handles customs clearing in Lagos?",
-      a: "Our dedicated logistics team handles 100% of customs clearing, airport handling, and local custom duties. There are absolutely no clearing fees or airport delays for you to manage. The quote you receive is completely inclusive."
+      q: "Who handles customs and import support in Lagos?",
+      a: "We coordinate with local clearing agents to provide customs support and airport handling. We aim to guide shipments through customs smoothly, providing you with a clear upfront estimate before confirmation."
     },
     {
       id: "shp-3",
@@ -78,7 +78,7 @@ export default function FAQ() {
       id: "pay-2",
       category: "Payments & Exchange",
       q: "Why is the Naira quote different from the direct exchange rate?",
-      a: "Our Naira quotes are all-inclusive, covering international bank checkout transaction fees, card conversion taxes, international shipping, local clearing, and customs. This guarantees no unexpected expenses at delivery."
+      a: "Our Naira quotes are designed as upfront estimates, covering international transaction markups, international shipping, and customs/import support. Your final locked-in quote is confirmed via WhatsApp before payment."
     },
     // Category: Returns
     {

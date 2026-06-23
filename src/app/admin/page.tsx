@@ -71,7 +71,7 @@ export default function AdminPreview() {
       value: "₦3,400,000",
       status: "Delivered",
       date: "June 08, 2026",
-      details: { size: "16-inch / 18GB RAM", color: "Space Black", qty: "1", note: "High-value cargo clearance support dispatched.", address: "Victoria Island, Lagos" }
+      details: { size: "16-inch / 18GB RAM", color: "Space Black", qty: "1", note: "High-value cargo import support coordinated.", address: "Victoria Island, Lagos" }
     },
     {
       code: "CWZ-5110",

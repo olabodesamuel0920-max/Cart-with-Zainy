@@ -563,8 +563,8 @@ _Please send this message to receive your Naira quote and payment details._`;
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Customs & Clearing Support</h4>
-                    <p className="text-[11px] leading-relaxed text-onyx-700">Our estimates include handling and logistics coordination at Lagos ports, helping resolve customs holds and clearing procedures.</p>
+                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Customs & Import Support</h4>
+                    <p className="text-[11px] leading-relaxed text-onyx-700">Our estimates include import support and logistics coordination, helping navigate documentation and airport handling procedures.</p>
                   </div>
                 </div>
               </div>

@@ -59,7 +59,7 @@ function TrackingContent() {
       { status: "Payment Confirmed", date: "June 12, 2026 - 02:45 PM", desc: "Naira payment confirmed via bank transfer. Order locked in.", state: "completed" },
       { status: "Processing", date: "June 14, 2026 - 09:00 AM", desc: "Item purchased from Apple Store. Received at US warehouse and checked.", state: "completed" },
       { status: "Shipped", date: "June 18, 2026 - 04:30 PM", desc: "Departed US sorting facility via air cargo. In transit to Lagos, Nigeria.", state: "active" },
-      { status: "Delivered", date: "Pending", desc: "Awaiting arrival in Lagos, clearing, and local dispatcher handoff.", state: "pending" }
+      { status: "Delivered", date: "Pending", desc: "Awaiting arrival in Lagos, import processing, and local dispatcher handoff.", state: "pending" }
     ]
   };
 
@@ -349,7 +349,7 @@ function TrackingContent() {
                   <span>{orderData.costs.shipping}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Customs clearing support:</span>
+                  <span>Customs/import support:</span>
                   <span>{orderData.costs.customs}</span>
                 </div>
                 <div className="border-t border-gold-400/10 pt-3 flex justify-between items-center text-sm font-bold text-onyx-950 mt-2">
@@ -388,7 +388,7 @@ function TrackingContent() {
                   <li>Direct retail store ordering verified.</li>
                   <li>Overseas warehouse package specs double-checked.</li>
                   <li>Volumetric weight verified.</li>
-                  <li>Lagos airport clearing support pre-cleared.</li>
+                  <li>Lagos airport import and customs support prepared.</li>
                 </ul>
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function TrackOrder() {
             Order Status
           </span>
           <h1 className="mt-2 font-serif text-3xl sm:text-5xl font-bold text-cream-50">
-            Track Shipment & Clearing
+            Track Shipment & Delivery
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-cream-300 max-w-lg mx-auto">
             Input your personal concierge tracking code to see the transit updates of your international package.

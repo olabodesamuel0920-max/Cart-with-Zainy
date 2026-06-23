@@ -106,12 +106,12 @@ export default function Home() {
     },
     {
       title: "Transparent Cost Estimates",
-      desc: "Get upfront quotes detailing item cost, estimated shipping, customs clearing fees, and local delivery in Nigeria.",
+      desc: "Get upfront quotes detailing item cost, estimated shipping, customs support estimates, and local delivery in Nigeria.",
       icon: Percent
     },
     {
-      title: "Customs Clearing Support",
-      desc: "Our logistics partners manage the clearance process, helping to minimize delays and clearing hassles.",
+      title: "Customs Guidance & Support",
+      desc: "We assist with customs documentation and coordinate import procedures to support a smooth process.",
       icon: Truck
     },
     {
@@ -128,7 +128,7 @@ export default function Home() {
     },
     {
       q: "How do you calculate the exchange rate?",
-      a: "We use competitive daily market exchange rates to generate your quote in Naira. Our quote is fully transparent and all-inclusive—no extra payments will be requested at delivery."
+      a: "We use competitive daily market exchange rates to generate your quote in Naira. Our quote provides a clear upfront estimate before confirmation, with final pricing locked in via WhatsApp before payment."
     },
     {
       q: "How long does shipping and delivery take?",
@@ -160,7 +160,7 @@ export default function Home() {
           </h1>
 
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-cream-200 font-sans leading-relaxed mb-10">
-            Purchase quality products from trusted international stores in the US, UK, & Europe. We handle purchasing, customs clearance, global shipping, and direct delivery to your doorstep in Nigeria.
+            Purchase quality products from trusted international stores in the US, UK, & Europe. We provide purchasing concierge services, customs/import support, global shipping, and delivery estimates straight to your address in Nigeria.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
