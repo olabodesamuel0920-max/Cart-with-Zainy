@@ -59,7 +59,7 @@ export default function FAQ() {
       id: "shp-2",
       category: "Shipping & Customs",
       q: "Who handles customs and import support in Lagos?",
-      a: "We coordinate with local clearing agents to provide customs support and airport handling. We aim to guide shipments through customs smoothly, providing you with a clear upfront estimate before confirmation."
+      a: "We coordinate with local logistics partners to provide customs/import support and airport handling. We aim to guide shipments through customs smoothly, providing you with a clear upfront estimate before confirmation."
     },
     {
       id: "shp-3",

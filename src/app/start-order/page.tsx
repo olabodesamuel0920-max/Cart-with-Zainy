@@ -65,12 +65,12 @@ export default function StartOrder() {
     
     const serviceFeeBase = retail * 0.10;
     const shippingBase = weightVal * shippingPerKg;
-    const customsClearingBase = retail * 0.05; // 5% Customs Clearing support estimate
+    const customsImportSupportBase = retail * 0.05; // 5% Customs/import support estimate
     
     const retailNaira = retail * rate;
     const serviceFeeNaira = serviceFeeBase * rate;
     const shippingNaira = shippingBase * rate;
-    const customsNaira = customsClearingBase * rate;
+    const customsNaira = customsImportSupportBase * rate;
     const totalNaira = retailNaira + serviceFeeNaira + shippingNaira + customsNaira;
 
     return {
