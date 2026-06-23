@@ -136,7 +136,7 @@ export default function Home() {
     },
     {
       q: "How long does shipping and delivery take?",
-      a: "Standard shipping takes 7-14 business days from when the store delivers the package to our international warehouse. Express options are also available upon request."
+      a: "Estimated delivery is usually 2–4 weeks after order/payment confirmation. Delivery may occasionally be affected by customs/import processes, public holidays, weather conditions, or other unforeseen logistics delays."
     }
   ];
 

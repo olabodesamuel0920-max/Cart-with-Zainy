@@ -53,7 +53,7 @@ export default function FAQ() {
       id: "shp-1",
       category: "Shipping & Customs",
       q: "How long does shipping take from the UK/US to Nigeria?",
-      a: "Standard air cargo takes between 7-14 business days from the date your package arrives at our international sorting hub. Shipping times may vary slightly based on flight schedules and destination cities in Nigeria."
+      a: "Estimated delivery is usually 2–4 weeks after order/payment confirmation. Delivery may occasionally be affected by customs/import processes, public holidays, weather conditions, or other unforeseen logistics delays."
     },
     {
       id: "shp-2",
