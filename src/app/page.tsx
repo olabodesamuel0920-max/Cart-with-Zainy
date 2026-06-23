@@ -21,7 +21,9 @@ import {
   ChevronRight,
   TrendingUp,
   MapPin,
-  Clock
+  Clock,
+  CreditCard,
+  ShieldAlert
 } from "lucide-react";
 
 export default function Home() {
@@ -36,26 +38,32 @@ export default function Home() {
     {
       num: "01",
       title: "Submit Details",
-      desc: "Paste product links or upload screenshots of items from any international store.",
+      desc: "Paste product links or upload screenshots of the items you wish to purchase.",
       icon: Send,
     },
     {
       num: "02",
-      title: "Get Naira Quote",
-      desc: "Receive a transparent, all-inclusive invoice covering purchasing, shipping, and customs.",
+      title: "Receive Quote",
+      desc: "Get an estimated conversion and Naira shipping quote via WhatsApp support chat.",
       icon: FileText,
     },
     {
       num: "03",
-      title: "We Shop & Ship",
-      desc: "Upon confirmation, we buy your items, verify their quality, and ship them securely.",
-      icon: Truck,
+      title: "Confirm Payment",
+      desc: "Approve the estimates and initiate transfer to fund the concierge purchase.",
+      icon: CreditCard,
     },
     {
       num: "04",
-      title: "Doorstep Delivery",
-      desc: "Relax as your order is cleared through customs and delivered directly to your home in Nigeria.",
-      icon: CheckCircle,
+      title: "We Purchase",
+      desc: "We verify item details at our sorting facility and coordinate international cargo.",
+      icon: ShieldCheck,
+    },
+    {
+      num: "05",
+      title: "Track Delivery",
+      desc: "Follow status milestones locally from departures to doorstep dispatcher handoff.",
+      icon: Truck,
     },
   ];
 
@@ -186,24 +194,26 @@ export default function Home() {
             <div className="mx-auto mt-4 h-1 w-16 bg-gold-500 rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {steps.map((step, idx) => (
               <div 
                 key={idx}
-                className="relative group p-8 rounded-md bg-cream-100 border border-gold-400/5 hover:border-gold-400/20 hover:shadow-md transition-all duration-300"
+                className="relative group p-6 rounded-md bg-cream-100 border border-gold-400/5 hover:border-gold-400/20 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
               >
-                <div className="absolute top-6 right-6 font-serif text-3xl font-extrabold text-gold-400/20 group-hover:text-gold-400/45 transition-colors">
-                  {step.num}
+                <div>
+                  <div className="absolute top-6 right-6 font-serif text-3xl font-extrabold text-gold-400/20 group-hover:text-gold-400/45 transition-colors">
+                    {step.num}
+                  </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-burgundy-700 text-cream-50 mb-5 group-hover:scale-105 transition-transform duration-300">
+                    <step.icon className="h-5 w-5 text-gold-400" />
+                  </div>
+                  <h3 className="font-serif text-base font-bold text-onyx-900 mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs leading-relaxed text-onyx-700">
+                    {step.desc}
+                  </p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-burgundy-700 text-cream-50 mb-6 group-hover:scale-105 transition-transform duration-300">
-                  <step.icon className="h-5 w-5 text-gold-400" />
-                </div>
-                <h3 className="font-serif text-lg font-bold text-onyx-900 mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-onyx-700">
-                  {step.desc}
-                </p>
               </div>
             ))}
           </div>
@@ -291,6 +301,71 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Safety Center Section */}
+      <section className="bg-burgundy-950 px-4 py-20 sm:px-6 lg:px-8 border-t border-gold-400/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(90,24,39,0.3),transparent_50%)]" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <span className="text-xs font-semibold uppercase tracking-widest text-gold-400">
+              Safe & Protected
+            </span>
+            <h2 className="mt-2 font-serif text-3xl sm:text-4xl font-bold tracking-tight text-cream-50">
+              Trust & Handoff Safeguards
+            </h2>
+            <p className="mt-2 text-sm text-cream-300 max-w-lg mx-auto">
+              How we verify orders and safeguard your international purchases.
+            </p>
+            <div className="mx-auto mt-4 h-1 w-16 bg-gold-400 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="p-6 rounded-md bg-burgundy-900/40 border border-gold-400/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-gold-400/10 text-gold-400 mb-5">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-cream-50 mb-2">
+                Hub Inspection Support
+              </h3>
+              <p className="text-xs leading-relaxed text-cream-300">
+                Our sorting warehouse teams verify sizes and product selections against order receipts upon arrival, helping catch merchant packaging mistakes prior to international shipment (subject to retailer return rules).
+              </p>
+            </div>
+
+            <div className="p-6 rounded-md bg-burgundy-900/40 border border-gold-400/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-gold-400/10 text-gold-400 mb-5">
+                <Truck className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-cream-50 mb-2">
+                Reinforced Cargo Padding
+              </h3>
+              <p className="text-xs leading-relaxed text-cream-300">
+                All concierge packages are checked and repacked with protective buffers when consolidated, ensuring fragile boxes and premium goods withstand air cargo transits securely.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-md bg-burgundy-900/40 border border-gold-400/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-gold-400/10 text-gold-400 mb-5">
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-cream-50 mb-2">
+                WhatsApp Shopper Updates
+              </h3>
+              <p className="text-xs leading-relaxed text-cream-300">
+                You are paired directly with a single logistics concierge agent on WhatsApp. They share status pictures, provide estimated tracking times, and coordinate final delivery drop-offs.
+              </p>
+            </div>
+          </div>
+
+          {/* Sandbox note */}
+          <div className="mt-12 max-w-2xl mx-auto rounded-sm bg-gold-400/5 border border-gold-400/20 p-4 flex items-start space-x-3 text-gold-300">
+            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+            <p className="text-xs leading-relaxed text-left">
+              <strong>Client Demo Notice:</strong> Cart with Zainy is currently presented in sandbox preview mode. All order routing, package verification steps, and status maps demonstrate simulated workflows without real backend database integrations or actual cargo transport.
+            </p>
           </div>
         </div>
       </section>

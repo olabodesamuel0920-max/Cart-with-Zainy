@@ -11,12 +11,17 @@ import {
   Package, 
   Truck, 
   MessageSquare, 
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  ChevronRight,
-  TrendingUp,
-  User
+  AlertCircle, 
+  CheckCircle2, 
+  Clock, 
+  ChevronRight, 
+  TrendingUp, 
+  User,
+  Download,
+  Info,
+  FileText,
+  ShieldCheck,
+  ShieldAlert
 } from "lucide-react";
 
 // Separate search parsing component for Next.js Suspense compatibility
@@ -41,6 +46,14 @@ function TrackingContent() {
     carrier: "Cart with Zainy Luxury Cargo",
     trackingNum: "CWZ-TX94021-US",
     destination: "Lekki Phase 1, Lagos, Nigeria",
+    shopper: "Zainab Yusuf (Lead Concierge)",
+    costs: {
+      retail: "₦1,485,000",
+      shipping: "₦148,500",
+      customs: "₦74,250",
+      serviceFee: "₦148,500",
+      total: "₦1,856,250"
+    },
     timeline: [
       { status: "Request Received", date: "June 12, 2026 - 10:24 AM", desc: "Order details submitted by client, quote calculated.", state: "completed" },
       { status: "Payment Confirmed", date: "June 12, 2026 - 02:45 PM", desc: "Naira payment confirmed via bank transfer. Order locked in.", state: "completed" },
@@ -62,6 +75,14 @@ function TrackingContent() {
       carrier: "Cart with Zainy Standard Cargo",
       trackingNum: `CWZ-TX${Math.floor(10000 + Math.random() * 90000)}-INTL`,
       destination: "Lagos, Nigeria",
+      shopper: "Zainab Yusuf (Lead Concierge)",
+      costs: {
+        retail: "₦222,750",
+        shipping: "₦29,700",
+        customs: "₦11,137",
+        serviceFee: "₦22,275",
+        total: "₦285,862"
+      },
       timeline: [
         { status: "Request Received", date: "Just Now", desc: "Your order details have been received. Please click 'Contact Agent' to lock in your payment.", state: "completed" },
         { status: "Payment Confirmed", date: "Pending", desc: "Waiting for bank transfer or card payment confirmation.", state: "active" },
@@ -139,157 +160,241 @@ function TrackingContent() {
 
       {/* Tracking Card */}
       {orderData && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
-          {/* Summary Card */}
-          <div className="bg-onyx-950 text-cream-200 border border-gold-400/15 p-6 sm:p-8 rounded-md shadow-lg relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(90,24,39,0.25),transparent_40%)]" />
+          {/* Main Content Column (Spans 2) */}
+          <div className="lg:col-span-2 space-y-8">
             
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between border-b border-gold-400/10 pb-6 mb-6">
-              <div>
-                <span className="text-[10px] font-semibold tracking-widest text-gold-400 uppercase">
-                  Active Shipment
-                </span>
-                <h2 className="font-mono text-2xl font-bold tracking-wider text-cream-50 mt-1">
-                  {orderData.code}
-                </h2>
+            {/* Summary Details */}
+            <div className="bg-onyx-950 text-cream-200 border border-gold-400/15 p-6 sm:p-8 rounded-md shadow-lg relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(90,24,39,0.25),transparent_40%)]" />
+              
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between border-b border-gold-400/10 pb-6 mb-6">
+                <div>
+                  <span className="text-[10px] font-semibold tracking-widest text-gold-400 uppercase">
+                    Active Shipment Portal
+                  </span>
+                  <h2 className="font-mono text-2xl font-bold tracking-wider text-cream-50 mt-1">
+                    {orderData.code}
+                  </h2>
+                </div>
+                <div className="mt-4 md:mt-0 flex flex-col md:items-end">
+                  <span className="text-xs text-cream-300 uppercase tracking-wider font-semibold">
+                    Carrier / Airway Cargo
+                  </span>
+                  <span className="text-sm text-gold-300 font-medium mt-0.5 font-mono">
+                    {orderData.carrier} ({orderData.trackingNum})
+                  </span>
+                </div>
               </div>
-              <div className="mt-4 md:mt-0 flex flex-col md:items-end">
-                <span className="text-xs text-cream-300 uppercase tracking-wider font-semibold">
-                  Carrier / Shipway
-                </span>
-                <span className="text-sm text-gold-300 font-medium mt-0.5">
-                  {orderData.carrier} ({orderData.trackingNum})
-                </span>
+
+              <div className="relative z-10 grid grid-cols-1 gap-6 sm:grid-cols-3 text-xs">
+                <div className="flex items-start space-x-3">
+                  <Package className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs text-cream-400 uppercase font-semibold">Item Specs</h4>
+                    <p className="mt-1 font-medium text-cream-50 leading-relaxed">{orderData.product}</p>
+                    <p className="text-xs text-cream-300 mt-0.5">from {orderData.store}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Calendar className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs text-cream-400 uppercase font-semibold">Timeframe Estimate</h4>
+                    <p className="mt-1 font-medium text-cream-50">{orderData.estimatedDelivery}</p>
+                    <p className="text-xs text-cream-300 mt-0.5">Ordered on {orderData.dateOrdered}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <MapPin className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs text-cream-400 uppercase font-semibold">Local Destination</h4>
+                    <p className="mt-1 font-medium text-cream-50">{orderData.destination}</p>
+                    <p className="text-xs text-cream-300 mt-0.5">Client: {orderData.customer}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="relative z-10 grid grid-cols-1 gap-6 sm:grid-cols-3 text-sm">
-              <div className="flex items-start space-x-3">
-                <Package className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs text-cream-400 uppercase font-semibold">Product Description</h4>
-                  <p className="mt-1 font-medium text-cream-50">{orderData.product}</p>
-                  <p className="text-xs text-cream-300 mt-0.5">from {orderData.store}</p>
-                </div>
-              </div>
+            {/* Timeline Section */}
+            <div className="bg-cream-100 border border-gold-400/5 p-6 sm:p-10 rounded-md shadow-sm">
+              <h3 className="font-serif text-xl font-bold text-onyx-900 mb-8 border-b border-gold-400/10 pb-3">
+                Shipment Status Timeline
+              </h3>
 
-              <div className="flex items-start space-x-3">
-                <Calendar className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs text-cream-400 uppercase font-semibold">Estimated Arrival</h4>
-                  <p className="mt-1 font-medium text-cream-50">{orderData.estimatedDelivery}</p>
-                  <p className="text-xs text-cream-300 mt-0.5">Ordered on {orderData.dateOrdered}</p>
-                </div>
-              </div>
+              <div className="flow-root">
+                <ul className="-mb-8">
+                  {orderData.timeline.map((step: any, idx: number) => {
+                    const isCompleted = step.state === "completed";
+                    const isActive = step.state === "active";
+                    const isLast = idx === orderData.timeline.length - 1;
 
-              <div className="flex items-start space-x-3">
-                <MapPin className="h-5 w-5 text-gold-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs text-cream-400 uppercase font-semibold">Local Destination</h4>
-                  <p className="mt-1 font-medium text-cream-50">{orderData.destination}</p>
-                  <p className="text-xs text-cream-300 mt-0.5">Recipient: {orderData.customer}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline Section */}
-          <div className="bg-cream-100 border border-gold-400/5 p-6 sm:p-10 rounded-md shadow-sm">
-            <h3 className="font-serif text-xl font-bold text-onyx-900 mb-8 border-b border-gold-400/10 pb-3">
-              Shipment Status Timeline
-            </h3>
-
-            <div className="flow-root">
-              <ul className="-mb-8">
-                {orderData.timeline.map((step: any, idx: number) => {
-                  const isCompleted = step.state === "completed";
-                  const isActive = step.state === "active";
-                  const isLast = idx === orderData.timeline.length - 1;
-
-                  return (
-                    <li key={idx}>
-                      <div className="relative pb-8">
-                        {/* Line */}
-                        {!isLast && (
-                          <span
-                            className={`absolute left-5 top-5 -ml-px h-full w-0.5 ${
-                              isCompleted ? "bg-burgundy-700" : "bg-gold-400/25"
-                            }`}
-                            aria-hidden="true"
-                          />
-                        )}
-                        
-                        <div className="relative flex items-start space-x-3">
-                          {/* Dot / Icon */}
-                          <div>
+                    return (
+                      <li key={idx}>
+                        <div className="relative pb-8">
+                          {/* Line */}
+                          {!isLast && (
                             <span
-                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform duration-300 ${
-                                isCompleted
-                                  ? "bg-burgundy-700 border-burgundy-700 text-cream-50"
-                                  : isActive
-                                  ? "bg-cream-100 border-gold-500 text-gold-600 scale-110 shadow-md shadow-gold-500/10"
-                                  : "bg-cream-50 border-gold-400/20 text-gold-400/40"
+                              className={`absolute left-5 top-5 -ml-px h-full w-0.5 ${
+                                isCompleted ? "bg-burgundy-700" : "bg-gold-400/25"
                               }`}
-                            >
-                              {isCompleted ? (
-                                <CheckCircle2 className="h-5 w-5 text-gold-400" />
-                              ) : isActive ? (
-                                <Clock className="h-5 w-5 text-gold-600 animate-pulse" />
-                              ) : (
-                                <Package className="h-4 w-4" />
-                              )}
-                            </span>
-                          </div>
-
-                          {/* Content */}
-                          <div className="min-w-0 flex-1 pt-1.5 pl-2">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                              <p
-                                className={`text-sm font-semibold uppercase tracking-wider ${
+                              aria-hidden="true"
+                            />
+                          )}
+                          
+                          <div className="relative flex items-start space-x-3">
+                            {/* Dot / Icon */}
+                            <div>
+                              <span
+                                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-transform duration-300 ${
                                   isCompleted
-                                    ? "text-onyx-900"
+                                    ? "bg-burgundy-700 border-burgundy-700 text-cream-50"
                                     : isActive
-                                    ? "text-gold-700"
-                                    : "text-onyx-600/50"
+                                    ? "bg-cream-100 border-gold-500 text-gold-600 scale-110 shadow-md shadow-gold-500/10"
+                                    : "bg-cream-50 border-gold-400/20 text-gold-400/40"
                                 }`}
                               >
-                                {step.status}
-                              </p>
-                              <span className="text-xs text-onyx-600 font-mono">
-                                {step.date}
+                                {isCompleted ? (
+                                  <CheckCircle2 className="h-5 w-5 text-gold-400" />
+                                ) : isActive ? (
+                                  <Clock className="h-5 w-5 text-gold-600 animate-pulse" />
+                                ) : (
+                                  <Package className="h-4 w-4" />
+                                )}
                               </span>
                             </div>
-                            <p className="mt-1 text-xs sm:text-sm text-onyx-700 leading-relaxed">
-                              {step.desc}
-                            </p>
-                          </div>
 
+                            {/* Content */}
+                            <div className="min-w-0 flex-1 pt-1.5 pl-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                                <p
+                                  className={`text-xs font-semibold uppercase tracking-wider ${
+                                    isCompleted
+                                      ? "text-onyx-900"
+                                      : isActive
+                                      ? "text-gold-700"
+                                      : "text-onyx-600/50"
+                                  }`}
+                                >
+                                  {step.status}
+                                </p>
+                                <span className="text-xs text-onyx-600 font-mono">
+                                  {step.date}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs sm:text-sm text-onyx-700 leading-relaxed">
+                                {step.desc}
+                              </p>
+                            </div>
+
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </div>
 
-            {/* Quick Action Button */}
-            <div className="mt-8 border-t border-gold-400/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <span className="text-xs text-onyx-600 text-center sm:text-left">
-                Have questions about this status? Reach out to your personal shopper.
+            {/* Portal Action Buttons */}
+            <div className="bg-cream-100 border border-gold-400/5 p-6 rounded-md shadow-sm flex flex-wrap gap-4 items-center justify-between">
+              <span className="text-xs text-onyx-600 font-medium">
+                Portal Management Actions
               </span>
-              <a
-                href={`https://wa.me/2347062987229?text=Hello%20Zainy,%20I%20have%20a%20question%20about%20my%20order%20${orderData.code}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-sm bg-gradient-to-r from-gold-400 to-gold-500 text-onyx-950 px-6 py-2.5 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
-              >
-                <MessageSquare className="mr-2 h-4 w-4 shrink-0" />
-                Contact Concierge
-              </a>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  onClick={() => alert("Demo Mode: Generating simulated PDF invoice copy. Sent to downloads folder.")}
+                  className="inline-flex items-center rounded-sm border border-gold-400/25 hover:bg-cream-200 text-onyx-950 px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors"
+                >
+                  <Download className="mr-2 h-4 w-4 shrink-0" />
+                  PDF Invoice
+                </button>
+                <a
+                  href={`https://wa.me/2347062987229?text=Hello%20Zainy,%20I%20have%20a%20question%2520about%2520my%2520shipping%2520status%2520${orderData.code}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-sm bg-gradient-to-r from-gold-400 to-gold-500 text-onyx-950 px-5 py-2.5 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4 shrink-0 fill-current" />
+                  Chat with Shopper
+                </a>
+              </div>
             </div>
 
           </div>
+
+          {/* Sidebar Column: Cost Card & Shopper details */}
+          <div className="space-y-8">
+            
+            {/* Cost Breakdown */}
+            <div className="bg-cream-100 border border-gold-400/15 p-6 rounded-md shadow-sm">
+              <h3 className="font-serif text-lg font-bold text-onyx-900 border-b border-gold-400/10 pb-3 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-burgundy-700" />
+                <span>Estimated Cost Summary</span>
+              </h3>
+
+              <div className="space-y-2.5 text-xs text-onyx-700">
+                <div className="flex justify-between">
+                  <span>Retail Price:</span>
+                  <span className="font-semibold text-onyx-900">{orderData.costs.retail}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Service Fee (10%):</span>
+                  <span>{orderData.costs.serviceFee}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated Air Cargo:</span>
+                  <span>{orderData.costs.shipping}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Customs clearing support:</span>
+                  <span>{orderData.costs.customs}</span>
+                </div>
+                <div className="border-t border-gold-400/10 pt-3 flex justify-between items-center text-sm font-bold text-onyx-950 mt-2">
+                  <span>Total Naira Estimate:</span>
+                  <span className="text-burgundy-800 text-base font-mono">{orderData.costs.total}</span>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div className="mt-4 rounded-sm bg-burgundy-900/5 p-3 border border-burgundy-950/10 text-[10px] leading-relaxed text-burgundy-900">
+                <Info className="h-4 w-4 shrink-0 inline-block mr-1 -mt-0.5 text-burgundy-700" />
+                <strong>Notice:</strong> This is a simulation summary. The final locked quote was generated manually and agreed upon WhatsApp prior to checkout.
+              </div>
+            </div>
+
+            {/* Shopper Card */}
+            <div className="bg-cream-100 border border-gold-400/15 p-6 rounded-md shadow-sm">
+              <h3 className="font-serif text-base font-bold text-onyx-900 border-b border-gold-400/10 pb-3 mb-4 flex items-center gap-2">
+                <User className="h-5 w-5 text-burgundy-700" />
+                <span>Assigned Concierge</span>
+              </h3>
+              
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-burgundy-800/10 text-burgundy-700 flex items-center justify-center font-bold text-sm">
+                  ZY
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-onyx-900">{orderData.shopper}</p>
+                  <p className="text-[10px] text-onyx-600">Personal Logistics Shopper</p>
+                </div>
+              </div>
+
+              <div className="text-[10px] leading-relaxed text-onyx-700 bg-cream-50 p-3 rounded-sm border border-gold-400/5">
+                <p className="font-semibold text-onyx-900 mb-1">Checkpoints Passed:</p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Direct retail store ordering verified.</li>
+                  <li>Overseas warehouse package specs double-checked.</li>
+                  <li>Volumetric weight verified.</li>
+                  <li>Lagos airport clearing support pre-cleared.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       )}
     </div>

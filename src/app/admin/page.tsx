@@ -9,32 +9,26 @@ import {
   DollarSign, 
   MessageSquare, 
   Search, 
-  SlidersHorizontal,
-  BadgeAlert,
-  ArrowUpRight,
-  TrendingUp,
-  Mail,
-  Truck,
-  CheckCircle,
-  Clock,
-  ShieldCheck,
+  SlidersHorizontal, 
+  BadgeAlert, 
+  ArrowUpRight, 
+  TrendingUp, 
+  Mail, 
+  Truck, 
+  CheckCircle, 
+  Clock, 
+  ShieldCheck, 
   Menu,
-  ExternalLink
+  X,
+  ExternalLink,
+  User
 } from "lucide-react";
 
 export default function AdminPreview() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const stats = [
-    { label: "Total Orders", value: "28", icon: Package, change: "+12.5% this wk", color: "text-gold-500 bg-gold-400/5 border-gold-400/10" },
-    { label: "Pending Quotes", value: "3", icon: Clock, change: "Quotes due today", color: "text-burgundy-700 bg-burgundy-700/5 border-burgundy-700/10" },
-    { label: "Processing", value: "7", icon: ShieldCheck, change: "Ordered from stores", color: "text-blue-600 bg-blue-600/5 border-blue-600/10" },
-    { label: "In Transit", value: "11", icon: Truck, change: "Air Cargo active", color: "text-amber-600 bg-amber-600/5 border-amber-600/10" },
-    { label: "Delivered", value: "7", icon: CheckCircle, change: "Closed requests", color: "text-emerald-600 bg-emerald-600/5 border-emerald-600/10" },
-  ];
-
-  const sampleOrders = [
+  const [orders, setOrders] = useState([
     {
       code: "CWZ-1042",
       name: "Samuel Olabode",
@@ -44,6 +38,7 @@ export default function AdminPreview() {
       value: "₦1,850,000",
       status: "Shipped",
       date: "June 12, 2026",
+      details: { size: "256GB", color: "Natural Titanium", qty: "1", note: "Verify original Apple retail packaging is included.", address: "Lekki Phase 1, Lagos" }
     },
     {
       code: "CWZ-8491",
@@ -54,6 +49,7 @@ export default function AdminPreview() {
       value: "₦195,000",
       status: "Pending Quote",
       date: "June 23, 2026",
+      details: { size: "US 10", color: "Black/White", qty: "1", note: "Ensure shoe box is double-boxed to avoid transit dents.", address: "Ikeja GRA, Lagos" }
     },
     {
       code: "CWZ-3942",
@@ -64,6 +60,7 @@ export default function AdminPreview() {
       value: "₦850,000",
       status: "Processing",
       date: "June 20, 2026",
+      details: { size: "Standard", color: "Prussian Blue", qty: "1", note: "Inspect all original seal wrappers at US sorting hub.", address: "Wuse 2, Abuja" }
     },
     {
       code: "CWZ-7201",
@@ -74,6 +71,7 @@ export default function AdminPreview() {
       value: "₦3,400,000",
       status: "Delivered",
       date: "June 08, 2026",
+      details: { size: "16-inch / 18GB RAM", color: "Space Black", qty: "1", note: "High-value cargo clearance support dispatched.", address: "Victoria Island, Lagos" }
     },
     {
       code: "CWZ-5110",
@@ -84,6 +82,7 @@ export default function AdminPreview() {
       value: "₦9,200,000",
       status: "Payment Confirmed",
       date: "June 21, 2026",
+      details: { size: "Medium", color: "Black Caviar", qty: "1", note: "Verify invoice copies, bubble wrap extensively.", address: "Asokoro, Abuja" }
     },
     {
       code: "CWZ-6291",
@@ -94,8 +93,28 @@ export default function AdminPreview() {
       value: "₦480,000",
       status: "Shipped",
       date: "June 16, 2026",
+      details: { size: "One Size", color: "Silver", qty: "1", note: "Standard protective cargo packaging.", address: "GRA, Port Harcourt" }
     }
-  ];
+  ]);
+
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [showDrawer, setShowDrawer] = useState(false);
+
+  const stats = React.useMemo(() => {
+    const totalCount = orders.length + 22; // Offset for demo pipeline scale
+    const pendingCount = orders.filter(o => o.status === "Pending Quote").length;
+    const processingCount = orders.filter(o => o.status === "Processing" || o.status === "Payment Confirmed").length + 5;
+    const shippedCount = orders.filter(o => o.status === "Shipped").length + 9;
+    const deliveredCount = orders.filter(o => o.status === "Delivered").length + 6;
+
+    return [
+      { label: "Total Orders", value: totalCount.toString(), icon: Package, change: "+12.5% this wk", color: "text-gold-500 bg-gold-400/5 border-gold-400/10" },
+      { label: "Pending Quotes", value: pendingCount.toString(), icon: Clock, change: "Quotes due today", color: "text-burgundy-700 bg-burgundy-700/5 border-burgundy-700/10" },
+      { label: "Processing", value: processingCount.toString(), icon: ShieldCheck, change: "Ordered from stores", color: "text-blue-600 bg-blue-600/5 border-blue-600/10" },
+      { label: "In Transit", value: shippedCount.toString(), icon: Truck, change: "Air Cargo active", color: "text-amber-600 bg-amber-600/5 border-amber-600/10" },
+      { label: "Delivered", value: deliveredCount.toString(), icon: CheckCircle, change: "Closed requests", color: "text-emerald-600 bg-emerald-600/5 border-emerald-600/10" },
+    ];
+  }, [orders]);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -114,7 +133,7 @@ export default function AdminPreview() {
     }
   };
 
-  const filteredOrders = sampleOrders.filter((order) => {
+  const filteredOrders = orders.filter((order) => {
     const matchesStatus = statusFilter === "All" || order.status === statusFilter || 
                           (statusFilter === "Pending" && order.status === "Pending Quote") ||
                           (statusFilter === "Completed" && order.status === "Delivered");
@@ -129,6 +148,14 @@ export default function AdminPreview() {
   const getWhatsAppLink = (order: any) => {
     const text = `Hello ${order.name}, this is Cart with Zainy concierge desk regarding your order request ${order.code} for the ${order.item}. We are updating your status to *${order.status}*.`;
     return `https://wa.me/${order.phone}?text=${encodeURIComponent(text)}`;
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    if (!selectedOrder) return;
+    setOrders((prev) =>
+      prev.map((o) => (o.code === selectedOrder.code ? { ...o, status: newStatus } : o))
+    );
+    setSelectedOrder((prev: any) => prev ? { ...prev, status: newStatus } : null);
   };
 
   return (
@@ -241,7 +268,11 @@ export default function AdminPreview() {
                     filteredOrders.map((order, idx) => (
                       <tr 
                         key={idx}
-                        className="hover:bg-cream-50/50 transition-colors"
+                        className="hover:bg-cream-50/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setShowDrawer(true);
+                        }}
                       >
                         <td className="p-4 font-mono font-bold text-burgundy-800">{order.code}</td>
                         <td className="p-4 font-medium text-onyx-900">{order.name}</td>
@@ -256,7 +287,7 @@ export default function AdminPreview() {
                           </span>
                         </td>
                         <td className="p-4 text-onyx-600">{order.date}</td>
-                        <td className="p-4 text-right">
+                        <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <a
                             href={getWhatsAppLink(order)}
                             target="_blank"
@@ -282,7 +313,7 @@ export default function AdminPreview() {
 
             {/* Table Footer */}
             <div className="bg-cream-200 px-6 py-4 flex items-center justify-between text-[11px] text-onyx-600 border-t border-gold-400/10">
-              <span>Showing {filteredOrders.length} of {sampleOrders.length} orders</span>
+              <span>Showing {filteredOrders.length} of {orders.length} orders</span>
               <span className="font-mono text-burgundy-700">Cart with Zainy Workspace Console v1.0.0</span>
             </div>
 
@@ -290,6 +321,165 @@ export default function AdminPreview() {
 
         </div>
       </section>
+
+      {/* View Order Drawer */}
+      {showDrawer && selectedOrder && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-onyx-950/60 backdrop-blur-xs transition-opacity duration-300" 
+            onClick={() => setShowDrawer(false)}
+          />
+
+          <div className="relative w-screen max-w-md bg-cream-50 border-l border-gold-400/20 shadow-2xl flex flex-col justify-between overflow-y-auto z-10">
+            
+            {/* Drawer Header */}
+            <div className="px-6 py-5 bg-onyx-950 text-cream-200 border-b border-gold-400/10 flex items-center justify-between">
+              <div>
+                <span className="text-[9px] font-semibold tracking-wider text-gold-400 uppercase">
+                  Order Details Panel (Simulated)
+                </span>
+                <h3 className="font-mono text-lg font-bold text-cream-50 mt-0.5">
+                  {selectedOrder.code}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setShowDrawer(false)}
+                className="rounded-md text-cream-400 hover:text-cream-50 hover:bg-burgundy-900/40 p-1"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Drawer Body */}
+            <div className="flex-1 p-6 space-y-6 text-xs text-onyx-700">
+              {/* Product Section */}
+              <div className="space-y-2.5">
+                <h4 className="font-serif text-sm font-bold text-onyx-900 border-b border-gold-400/10 pb-1 flex items-center gap-1.5">
+                  <Package className="h-4 w-4 text-burgundy-700" />
+                  <span>Product Specifications</span>
+                </h4>
+                <div className="space-y-1">
+                  <p className="font-semibold text-onyx-900 text-sm leading-normal">{selectedOrder.item}</p>
+                  <p>
+                    <span className="font-medium text-onyx-600">Store:</span> {selectedOrder.store}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 mt-2 bg-cream-100 p-2.5 border border-gold-400/5 rounded-sm text-center">
+                    <div>
+                      <span className="block text-[9px] uppercase text-onyx-600">Size</span>
+                      <span className="font-semibold text-onyx-900">{selectedOrder.details.size}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[9px] uppercase text-onyx-600">Color</span>
+                      <span className="font-semibold text-onyx-900">{selectedOrder.details.color}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[9px] uppercase text-onyx-600">Qty</span>
+                      <span className="font-semibold text-onyx-900">{selectedOrder.details.qty}</span>
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <a 
+                      href="https://example.com/store/item" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center text-burgundy-700 hover:underline font-semibold"
+                    >
+                      Visit Product Link
+                      <ExternalLink className="ml-1 h-3.5 w-3.5 text-burgundy-750" />
+                    </a>
+                  </div>
+                  <div className="mt-2 text-[10px] text-gold-700 bg-gold-400/5 p-2 rounded-sm border border-gold-400/15">
+                    📸 Visual screenshot reference matches order specification (Verified locally).
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Details Section */}
+              <div className="space-y-2.5">
+                <h4 className="font-serif text-sm font-bold text-onyx-900 border-b border-gold-400/10 pb-1 flex items-center gap-1.5">
+                  <User className="h-4 w-4 text-burgundy-700" />
+                  <span>Client & Delivery Information</span>
+                </h4>
+                <div className="space-y-1.5">
+                  <p><span className="font-semibold">Recipient:</span> {selectedOrder.name}</p>
+                  <p><span className="font-semibold">Contact:</span> +{selectedOrder.phone}</p>
+                  <p><span className="font-semibold">Address:</span> {selectedOrder.details.address}, Nigeria</p>
+                  <p><span className="font-semibold">Est. Order Value:</span> {selectedOrder.value}</p>
+                </div>
+              </div>
+
+              {/* Status Simulator Section */}
+              <div className="space-y-2.5">
+                <h4 className="font-serif text-sm font-bold text-onyx-900 border-b border-gold-400/10 pb-1 flex items-center gap-1.5">
+                  <SlidersHorizontal className="h-4 w-4 text-burgundy-700" />
+                  <span>Pipeline Simulation</span>
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-onyx-600 mb-1">
+                      Current Status
+                    </label>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-semibold border ${getStatusBadgeClass(selectedOrder.status)}`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+
+                  <div>
+                    <label htmlFor="simulate-status" className="block text-[10px] font-bold uppercase tracking-wider text-onyx-600 mb-1">
+                      Update Status (Simulated Handoff)
+                    </label>
+                    <select
+                      id="simulate-status"
+                      value={selectedOrder.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      className="w-full bg-cream-100 border border-gold-400/25 rounded-sm px-3 py-2 text-xs focus:outline-none focus:border-burgundy-700"
+                    >
+                      <option value="Pending Quote">Pending Quote</option>
+                      <option value="Payment Confirmed">Payment Confirmed</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                    </select>
+                  </div>
+
+                  <div className="text-[10px] bg-burgundy-900/5 p-3 rounded-sm border border-burgundy-750/15 text-burgundy-950">
+                    <strong>Simulation Notice:</strong> Selecting a status triggers a reactive state update. You will see stats updates in real-time on this preview dashboard.
+                  </div>
+                </div>
+              </div>
+
+              {/* Internal Notes */}
+              <div className="space-y-1 text-[11px]">
+                <p className="font-bold text-onyx-800">Concierge Desk Notes:</p>
+                <p className="text-onyx-700 leading-normal italic bg-cream-100 p-2.5 border border-gold-400/5 rounded-sm">
+                  {selectedOrder.details.note}
+                </p>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="p-6 border-t border-gold-400/10 bg-cream-100 flex gap-3">
+              <a
+                href={getWhatsAppLink(selectedOrder)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 inline-flex items-center justify-center rounded-sm bg-gradient-to-r from-gold-400 to-gold-500 text-onyx-950 py-3 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+              >
+                <MessageSquare className="mr-2 h-4 w-4 fill-current shrink-0" />
+                WhatsApp
+              </a>
+              <button
+                onClick={() => setShowDrawer(false)}
+                className="flex-1 border border-gold-400/35 hover:bg-cream-50 text-onyx-900 py-3 text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Close Panel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
