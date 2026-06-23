@@ -23,12 +23,16 @@ import {
   MapPin,
   Clock,
   CreditCard,
-  ShieldAlert
+  ShieldAlert,
+  ShoppingBag,
+  Info
 } from "lucide-react";
+import { PREORDER_PRODUCTS } from "@/data/products";
 
 export default function Home() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [trackCode, setTrackCode] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
 
   const toggleFaq = (index: number) => {
     setActiveFaq(activeFaq === index ? null : index);
@@ -69,30 +73,30 @@ export default function Home() {
 
   const categories = [
     {
-      title: "High Fashion & Luxury",
-      stores: "Zara, Farfetch, ASOS, Nordstrom",
-      tagline: "Designer apparel, shoes, and luxury bags.",
+      title: "Shoes",
+      stores: "Loafers, Slingbacks, Heels, Boots",
+      tagline: "Explore premium, comfortable footwear tailored for your style.",
       imageClass: "from-burgundy-950 to-burgundy-800",
       accent: "text-gold-300"
     },
     {
-      title: "Tech & Gadgets",
-      stores: "Amazon, Apple, Best Buy, eBay",
-      tagline: "Laptops, smartphones, audio gear, and parts.",
+      title: "Bags",
+      stores: "Handbags, Totes, Clutches, Crossbodies",
+      tagline: "Stunning accessory choices, from daily essentials to evening wear.",
       imageClass: "from-onyx-950 to-onyx-800",
       accent: "text-gold-300"
     },
     {
-      title: "Beauty & Self-Care",
-      stores: "Sephora, Ulta, Boots, Cult Beauty",
-      tagline: "Premium skincare, makeup, and perfumes.",
+      title: "Jewellery",
+      stores: "Necklaces, Rings, Bracelets, Earrings",
+      tagline: "Elegant necklaces, bracelets, and rings to complement any look.",
       imageClass: "from-burgundy-900 to-onyx-950",
       accent: "text-gold-300"
     },
     {
-      title: "Home & Lifestyle",
-      stores: "IKEA, Target, Wayfair, West Elm",
-      tagline: "Exquisite decor, accents, and accessories.",
+      title: "Clothing",
+      stores: "Dresses, Tops, Outerwear, Activewear",
+      tagline: "Curated wardrobe drops, dresses, and supportive active layers.",
       imageClass: "from-onyx-900 to-burgundy-950",
       accent: "text-gold-300"
     }
@@ -220,6 +224,103 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Current Preorder Finds */}
+      <section className="bg-cream-100 px-4 py-20 sm:px-6 lg:px-8 border-t border-gold-400/10">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <span className="text-xs font-semibold uppercase tracking-widest text-burgundy-700">
+              Curated Drops
+            </span>
+            <h2 className="mt-2 font-serif text-3xl sm:text-4xl font-bold tracking-tight text-onyx-900">
+              Current Preorder Finds
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-onyx-700 max-w-md mx-auto">
+              Shop our active preorder selections directly. Quoted prices include shipping to Lagos.
+            </p>
+            <div className="mx-auto mt-4 h-1 w-16 bg-gold-500 rounded-full" />
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-thin">
+            {["All", "Shoes", "Bags", "Clothing", "Jewellery"].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-300 ${
+                  activeCategory === cat
+                    ? "bg-burgundy-850 text-gold-300 shadow-md shadow-burgundy-900/10 border border-gold-400/20"
+                    : "bg-cream-50 text-onyx-800 border border-gold-400/10 hover:border-gold-400/35"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Grid */}
+          {activeCategory === "Jewellery" ? (
+            <div className="text-center py-16 bg-cream-50 rounded-md border border-gold-400/10 max-w-md mx-auto">
+              <ShoppingBag className="h-10 w-10 text-gold-500 mx-auto mb-3 opacity-60" />
+              <p className="font-serif text-lg font-bold text-onyx-900">New jewellery drops coming soon.</p>
+              <p className="text-xs text-onyx-600 mt-1">Check back later or message Zainy on WhatsApp for custom requests.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {PREORDER_PRODUCTS.filter(p => activeCategory === "All" || p.category === activeCategory).map((prod) => (
+                <div
+                  key={prod.id}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-md border border-gold-400/15 bg-cream-50 shadow-sm hover:shadow-lg hover:border-gold-400/35 transition-all duration-500"
+                >
+                  {/* Product Image */}
+                  <div className="relative overflow-hidden aspect-square bg-cream-100 border-b border-gold-400/10">
+                    <img
+                      src={prod.image}
+                      alt={prod.name}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-2 left-2 rounded-full bg-burgundy-900/90 text-gold-300 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-gold-400/25">
+                      {prod.category}
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-serif text-sm font-bold text-onyx-900 group-hover:text-burgundy-850 transition-colors">
+                        {prod.name}
+                      </h3>
+                      <div className="mt-1 flex items-center space-x-1 text-xs font-semibold text-burgundy-850 font-mono">
+                        <span>₦{prod.priceNGN.toLocaleString()} · Shipping included</span>
+                      </div>
+                      <p className="text-[10px] text-onyx-600 mt-1 leading-relaxed">
+                        {prod.notes}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      <Link
+                        href={`/start-order?preorderId=${prod.id}`}
+                        className="flex w-full items-center justify-center rounded-sm border border-gold-400/35 bg-cream-50 py-2 text-[11px] font-bold uppercase tracking-wider text-burgundy-900 hover:bg-burgundy-900/5 transition-colors"
+                      >
+                        Start Order Request
+                      </Link>
+                      <a
+                        href={`https://wa.me/2347062987229?text=Hi%20Zainy%2C%20I'd%20like%20to%20preorder%20the%20${encodeURIComponent(prod.name)}%20(%E2%82%A6${prod.priceNGN.toLocaleString()})!`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex w-full items-center justify-center rounded-sm bg-gradient-to-r from-gold-400 to-gold-500 py-2 text-[11px] font-bold uppercase tracking-wider text-onyx-950 hover:opacity-90 transition-opacity"
+                      >
+                        Preorder via WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Shopping Categories */}
       <section className="bg-onyx-950 px-4 py-20 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(90,24,39,0.15),transparent_60%)]" />
@@ -259,7 +360,11 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <p className="mt-8 text-center text-xs text-cream-300 italic opacity-85">
+            More categories will be added as Cart with Zainy grows.
+          </p>
+
+          <div className="text-center mt-8">
             <Link
               href="/start-order"
               className="inline-flex items-center text-sm font-semibold tracking-wider uppercase text-gold-400 hover:text-gold-300 transition-colors"
@@ -301,6 +406,49 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Story Section */}
+      <section className="bg-cream-50 px-4 py-20 sm:px-6 lg:px-8 border-t border-gold-400/10">
+        <div className="mx-auto max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            {/* Avatar Column */}
+            <div className="md:col-span-1 flex justify-center">
+              <div className="relative group flex items-center justify-center h-44 w-44 rounded-full border-4 border-double border-gold-400/50 bg-gradient-to-br from-burgundy-900 to-burgundy-950 shadow-xl overflow-hidden hover:scale-102 transition-transform duration-300">
+                {/* Visual Placeholder for Founder initials */}
+                <div className="text-center">
+                  <span className="font-serif text-6xl font-extrabold text-gradient bg-gradient-to-b from-gold-200 via-gold-400 to-gold-500 bg-clip-text text-transparent">
+                    Z
+                  </span>
+                  <div className="mt-1 text-[9px] uppercase tracking-widest text-gold-300 font-semibold opacity-85">
+                    EST. 2026
+                  </div>
+                </div>
+                {/* Decorative overlay shine */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cream-50/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-in-out" />
+              </div>
+            </div>
+
+            {/* Story Text Column */}
+            <div className="md:col-span-2 space-y-4 text-center md:text-left">
+              <span className="text-xs font-semibold uppercase tracking-widest text-burgundy-700">
+                Behind the Brand
+              </span>
+              <h2 className="font-serif text-3xl font-bold text-onyx-900 leading-tight">
+                Meet the Face Behind Cart with Zainy
+              </h2>
+              <div className="h-0.5 w-12 bg-gold-500 rounded-full mx-auto md:mx-0 my-3" />
+              <p className="text-sm leading-relaxed text-onyx-800 font-sans">
+                Cart with Zainy was founded by Zainab, a 400-level Physiology student at LAUTECH with a passion for business and helping people shop with ease. The brand was created to make preorder shopping from abroad feel more transparent, reliable, and stress-free for every Cartie.
+              </p>
+              <div className="inline-flex items-center space-x-2 text-xs font-semibold text-burgundy-850 uppercase tracking-wider">
+                <span>Founder &amp; Coordinator</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
+                <span>Zainab Yusuf</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -366,6 +514,80 @@ export default function Home() {
             <p className="text-xs leading-relaxed text-left">
               <strong>Client Demo Notice:</strong> Cart with Zainy is currently presented in sandbox preview mode. All order routing, package verification steps, and status maps demonstrate simulated workflows without real backend database integrations or actual cargo transport.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Preorder Rules & Shipping Guidelines */}
+      <section className="bg-cream-100 px-4 py-16 sm:px-6 lg:px-8 border-t border-gold-400/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(90,24,39,0.03),transparent_35%)]" />
+        <div className="relative mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <span className="text-xs font-semibold uppercase tracking-widest text-burgundy-700">
+              Shopper Guidelines
+            </span>
+            <h2 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-onyx-900">
+              Shipping Info &amp; Preorder Rules
+            </h2>
+            <div className="mx-auto mt-3 h-0.5 w-12 bg-gold-500 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            {/* Shipping Info Card */}
+            <div className="bg-cream-50 p-6 rounded-md border border-gold-400/15 shadow-sm space-y-4">
+              <h3 className="flex items-center space-x-2 font-serif text-lg font-bold text-burgundy-950 border-b border-gold-400/10 pb-2.5">
+                <Truck className="h-5 w-5 text-burgundy-700" />
+                <span>Shipping Information</span>
+              </h3>
+              <ul className="space-y-3.5 text-xs text-onyx-800 font-sans">
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shrink-0 mt-1.5" />
+                  <span><strong>Shipping Fees Included:</strong> All quoted product preorder prices already include international shipping fees.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shrink-0 mt-1.5" />
+                  <span><strong>Freight Method:</strong> All packages are consolidated and shipped securely via air freight.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shrink-0 mt-1.5" />
+                  <span><strong>Estimated Delivery Time:</strong> Delivery is typically <strong>2–4 weeks</strong> after order and payment confirmation.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shrink-0 mt-1.5" />
+                  <span><strong>Potential Delays Notice:</strong> While we aim for promptness, delivery times may occasionally be affected by customs/import support checks, public holidays, weather conditions, or unforeseen logistics circumstances.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shrink-0 mt-1.5" />
+                  <span><strong>WhatsApp Updates:</strong> You will receive real-time package updates and dispatcher details directly through WhatsApp from our concierge team.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Preorder Rules Card */}
+            <div className="bg-cream-50 p-6 rounded-md border border-gold-400/15 shadow-sm space-y-4">
+              <h3 className="flex items-center space-x-2 font-serif text-lg font-bold text-burgundy-950 border-b border-gold-400/10 pb-2.5">
+                <Info className="h-5 w-5 text-burgundy-700" />
+                <span>Important Preorder Rules</span>
+              </h3>
+              <ul className="space-y-3.5 text-xs text-onyx-800 font-sans">
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-burgundy-700 shrink-0 mt-1.5" />
+                  <span><strong>Payment Confirmation:</strong> Orders are placed with our global suppliers only after payment is confirmed.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-burgundy-700 shrink-0 mt-1.5" />
+                  <span><strong>Final Price Verification:</strong> Live pricing may change due to global store discounts. Final quotes are confirmed via WhatsApp before payment.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-burgundy-700 shrink-0 mt-1.5" />
+                  <span><strong>Cancellation Policy:</strong> Once an order is processed and secured with the supplier, cancellations, refunds, or exchanges may not be possible.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-burgundy-700 shrink-0 mt-1.5" />
+                  <span><strong>Reference Photos:</strong> Product photos are for reference. Slight differences in color saturation, packaging, or brand appearance may occur.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>

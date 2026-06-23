@@ -1,0 +1,170 @@
+{
+  "project": "Cart with Zainy",
+  "phase": "Phase 3 - Real Brand + Product Drop Alignment",
+  "usage_note": "Use product-images for the Current Preorder Finds/product showcase. Use brand-context-screenshots only as content/reference screenshots, not as product card images.",
+  "business_rules_from_user_screenshots": {
+    "starting_categories": [
+      "Shoes",
+      "Bags",
+      "Jewellery",
+      "Clothing"
+    ],
+    "pricing": "Quoted product prices include shipping.",
+    "shipping_method": "Air freight.",
+    "estimated_delivery": "2-4 weeks after order/payment confirmation.",
+    "delivery_note": "Delivery may be affected by customs/import processes, public holidays, weather conditions, or other unforeseen circumstances.",
+    "payment_note": "Orders are confirmed only after payment. Final prices are confirmed before payment.",
+    "product_photo_note": "Product photos are for reference; slight differences in color, packaging, or appearance may occur.",
+    "refund_note": "Once an order is placed with the supplier, cancellations/refunds may not be possible."
+  },
+  "products": [
+    {
+      "source": "1000593457.jpg",
+      "filename": "01_pink_chunky_loafers_21000.jpg",
+      "name": "Pink Chunky Loafers",
+      "category": "Shoes",
+      "price_ngn": 21000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593461.jpg",
+      "filename": "02_black_slingback_bow_heels_13000.jpg",
+      "name": "Black Slingback Bow Heels",
+      "category": "Shoes",
+      "price_ngn": 13000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593468.jpg",
+      "filename": "03_black_rhinestone_bow_heels_15000.jpg",
+      "name": "Black Rhinestone Bow Heels",
+      "category": "Shoes",
+      "price_ngn": 15000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593449.jpg",
+      "filename": "04_black_patent_bow_loafers_24000.jpg",
+      "name": "Black Patent Bow Loafers",
+      "category": "Shoes",
+      "price_ngn": 24000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593481.jpg",
+      "filename": "05_black_bow_slingback_heels_17000.jpg",
+      "name": "Black Bow Slingback Heels",
+      "category": "Shoes",
+      "price_ngn": 17000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593474.jpg",
+      "filename": "06_brown_bow_slingback_heels_17000.jpg",
+      "name": "Brown Bow Slingback Heels",
+      "category": "Shoes",
+      "price_ngn": 17000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593453.jpg",
+      "filename": "07_white_bow_chunky_loafers_21000.jpg",
+      "name": "White Bow Chunky Loafers",
+      "category": "Shoes",
+      "price_ngn": 21000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593443.jpg",
+      "filename": "08_black_chain_loafers_18000.jpg",
+      "name": "Black Chain Loafers",
+      "category": "Shoes",
+      "price_ngn": 18000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593464.jpg",
+      "filename": "09_burgundy_gloss_slingback_heels_16000.jpg",
+      "name": "Burgundy Gloss Slingback Heels",
+      "category": "Shoes",
+      "price_ngn": 16000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593472.jpg",
+      "filename": "10_black_rhinestone_buckle_bag_13000.jpg",
+      "name": "Black Rhinestone Buckle Bag",
+      "category": "Bags",
+      "price_ngn": 13000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593503.jpg",
+      "filename": "11_pink_one_shoulder_dress_25000.jpg",
+      "name": "Pink One-Shoulder Dress",
+      "category": "Clothing",
+      "price_ngn": 25000,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593501.jpg",
+      "filename": "12_burgundy_one_shoulder_dress_22500.jpg",
+      "name": "Burgundy One-Shoulder Dress",
+      "category": "Clothing",
+      "price_ngn": 22500,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593542.jpg",
+      "filename": "13_floral_comfort_bra_5500.jpg",
+      "name": "Floral Comfort Bra",
+      "category": "Clothing",
+      "price_ngn": 5500,
+      "notes": "Shipping included in quoted price. Size label in image: S\u2013XXL."
+    },
+    {
+      "source": "1000593541.jpg",
+      "filename": "14_white_everyday_bra_6700.jpg",
+      "name": "White Everyday Bra",
+      "category": "Clothing",
+      "price_ngn": 6700,
+      "notes": "Shipping included in quoted price."
+    },
+    {
+      "source": "1000593505.jpg",
+      "filename": "15_nude_support_top_6500.jpg",
+      "name": "Nude Support Top",
+      "category": "Clothing",
+      "price_ngn": 6500,
+      "notes": "Shipping included in quoted price."
+    }
+  ],
+  "context_images": [
+    {
+      "source": "1000593554.jpg",
+      "filename": "01_group_current_starting_categories_and_product_collage.jpg",
+      "description": "Group screenshot showing start categories and product post."
+    },
+    {
+      "source": "1000593552.jpg",
+      "filename": "02_founder_story_zainab.jpg",
+      "description": "Founder story screenshot."
+    },
+    {
+      "source": "1000593550.jpg",
+      "filename": "03_shipping_information_air_freight_2_to_4_weeks.jpg",
+      "description": "Shipping information screenshot."
+    },
+    {
+      "source": "1000593548.jpg",
+      "filename": "04_group_rules_and_guidelines.jpg",
+      "description": "Rules and guidelines screenshot."
+    },
+    {
+      "source": "1000593546.jpg",
+      "filename": "05_launch_welcome_message.jpg",
+      "description": "Welcome / group transition screenshot."
+    }
+  ],
+  "missing_sources": []
+}

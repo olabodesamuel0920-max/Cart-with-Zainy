@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { PREORDER_PRODUCTS } from "@/data/products";
 import { 
   ShoppingBag, 
   User, 
@@ -23,12 +25,19 @@ import {
   Info
 } from "lucide-react";
 
-export default function StartOrder() {
+// Inner form component that uses useSearchParams
+function StartOrderForm() {
+  const searchParams = useSearchParams();
+  const preorderIdParam = searchParams.get("preorderId");
+
+  const [requestType, setRequestType] = useState<'link' | 'screenshot' | 'preorder'>('link');
+  const [selectedPreorderId, setSelectedPreorderId] = useState<string>("");
+
   const [formData, setFormData] = useState({
     productLink: "",
     productName: "",
     storeName: "",
-    category: "Fashion & Luxury",
+    category: "Shoes",
     size: "",
     color: "",
     quantity: "1",
@@ -43,6 +52,24 @@ export default function StartOrder() {
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Prefill effect from search parameters
+  useEffect(() => {
+    if (preorderIdParam) {
+      const product = PREORDER_PRODUCTS.find(p => p.id === preorderIdParam);
+      if (product) {
+        setRequestType("preorder");
+        setSelectedPreorderId(preorderIdParam);
+        setFormData(prev => ({
+          ...prev,
+          productName: product.name,
+          category: product.category,
+          productLink: "Preorder Drop Find: " + product.name,
+          storeName: "Cart with Zainy Drop"
+        }));
+      }
+    }
+  }, [preorderIdParam]);
+
   // Calculator States (Demo exchange rates, easily customizable)
   const EXCHANGE_RATES = {
     USD: 1485,
@@ -54,7 +81,29 @@ export default function StartOrder() {
     weight: "2.0"
   });
 
-  const calculatedEstimate = React.useMemo(() => {
+  const selectedProduct = useMemo(() => {
+    if (requestType === "preorder" && selectedPreorderId) {
+      return PREORDER_PRODUCTS.find(p => p.id === selectedPreorderId);
+    }
+    return null;
+  }, [requestType, selectedPreorderId]);
+
+  const calculatedEstimate = useMemo(() => {
+    const qty = parseInt(formData.quantity) || 1;
+
+    if (requestType === "preorder" && selectedProduct) {
+      const totalNaira = selectedProduct.priceNGN * qty;
+      return {
+        isPreorder: true,
+        rate: 0,
+        retailNaira: totalNaira,
+        serviceFeeNaira: 0,
+        shippingNaira: 0,
+        customsNaira: 0,
+        totalNaira
+      };
+    }
+
     const rate = EXCHANGE_RATES[calcInput.currency];
     const retail = parseFloat(calcInput.price) || 0;
     const weightVal = parseFloat(calcInput.weight) || 0;
@@ -71,9 +120,10 @@ export default function StartOrder() {
     const serviceFeeNaira = serviceFeeBase * rate;
     const shippingNaira = shippingBase * rate;
     const customsNaira = customsImportSupportBase * rate;
-    const totalNaira = retailNaira + serviceFeeNaira + shippingNaira + customsNaira;
+    const totalNaira = (retailNaira + serviceFeeNaira + shippingNaira + customsNaira) * qty;
 
     return {
+      isPreorder: false,
       rate,
       retailNaira,
       serviceFeeNaira,
@@ -81,7 +131,7 @@ export default function StartOrder() {
       customsNaira,
       totalNaira
     };
-  }, [calcInput]);
+  }, [calcInput, requestType, selectedProduct, formData.quantity]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -97,6 +147,16 @@ export default function StartOrder() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (requestType === "preorder" && !selectedPreorderId) {
+      alert("Please select a preorder item drop first.");
+      return;
+    }
+
+    if (requestType === "screenshot" && !screenshotName) {
+      alert("Please upload a screenshot for visual reference.");
+      return;
+    }
+
     // Generate Order Code (e.g. CWZ-4821)
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const code = `CWZ-${randomNum}`;
@@ -106,20 +166,35 @@ export default function StartOrder() {
 
   const handleWhatsAppRedirect = () => {
     // Format WhatsApp Summary
-    const message = `*CART WITH ZAINY ORDER REQUEST* 🌟
-----------------------------------
-*Order Code:* ${generatedCode}
-*Status:* Quote Pending
-
-*PRODUCT DETAILS*
-🛍️ *Name:* ${formData.productName || "Not Specified"}
+    let productDetails = "";
+    if (requestType === "preorder" && selectedProduct) {
+      const qty = parseInt(formData.quantity) || 1;
+      const totalNGN = selectedProduct.priceNGN * qty;
+      productDetails = `🛍️ *Preorder Item:* ${selectedProduct.name}
+📂 *Category:* ${selectedProduct.category}
+📏 *Size:* ${formData.size || "N/A"}
+🎨 *Color:* ${formData.color || "N/A"}
+🔢 *Quantity:* ${formData.quantity}
+💰 *Preorder Price:* ₦${totalNGN.toLocaleString()} (Shipping included)`;
+    } else {
+      productDetails = `🛍️ *Name:* ${formData.productName || "Not Specified"}
 🏪 *Store:* ${formData.storeName || "Not Specified"}
 🔗 *Link:* ${formData.productLink || "None"}
 📂 *Category:* ${formData.category}
 📏 *Size:* ${formData.size || "N/A"}
 🎨 *Color:* ${formData.color || "N/A"}
 🔢 *Quantity:* ${formData.quantity}
-📸 *Screenshot:* ${screenshotName ? `Uploaded (${screenshotName})` : "None"}
+📸 *Screenshot:* ${screenshotName ? `Uploaded (${screenshotName})` : "None"}`;
+    }
+
+    const message = `*CART WITH ZAINY ORDER REQUEST* 🌟
+----------------------------------
+*Order Code:* ${generatedCode}
+*Request Type:* ${requestType === 'preorder' ? 'Preorder Find' : requestType === 'screenshot' ? 'Screenshot Quote' : 'Link Quote'}
+*Status:* Request Staged
+
+*PRODUCT DETAILS*
+${productDetails}
 
 *CUSTOMER INFO*
 👤 *Client:* ${formData.fullName}
@@ -128,7 +203,7 @@ export default function StartOrder() {
 
 *NOTES:* ${formData.notes || "None"}
 ----------------------------------
-_Please send this message to receive your Naira quote and payment details._`;
+_Please send this message to receive your final Naira quote, availability checks, and payment confirmation details via WhatsApp._`;
 
     const encodedText = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/2347062987229?text=${encodedText}`;
@@ -139,9 +214,7 @@ _Please send this message to receive your Naira quote and payment details._`;
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-
+    <>
       {/* Hero Banner */}
       <section className="bg-onyx-950 py-12 px-4 border-b border-gold-400/10 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(90,24,39,0.25),transparent_40%)]" />
@@ -153,7 +226,7 @@ _Please send this message to receive your Naira quote and payment details._`;
             Submit Your Shopping Request
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-cream-300 max-w-lg mx-auto">
-            Provide the details of the items you want. We will calculate shipping, handling, and duties, and generate your Naira quote.
+            Provide the details of the items you want. We will calculate estimated conversion and consolidated shipping rates, and generate your quote.
           </p>
         </div>
       </section>
@@ -165,406 +238,646 @@ _Please send this message to receive your Naira quote and payment details._`;
           <div className="mb-8 rounded-sm bg-burgundy-900/10 border border-burgundy-900/25 p-4 flex items-start space-x-3 text-burgundy-900">
             <BadgeInfo className="h-5 w-5 shrink-0 mt-0.5" />
             <div className="text-xs">
-              <span className="font-bold">DEMO MODE:</span> Filling out this form simulates generating a quote request. On submission, a mock tracking code is generated, and a pre-formatted checkout summary will open on WhatsApp.
+              <span className="font-bold">DEMO MODE:</span> Filling out this form simulates generating a quote request. On submission, a mock tracking code is generated, and a pre-formatted checkout summary will open on WhatsApp for final supplier validation.
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Form Column (Spans 2) */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-8 bg-cream-100 border border-gold-400/5 p-6 sm:p-10 rounded-md shadow-sm">
+              <div className="bg-cream-100 border border-gold-400/5 p-6 sm:p-10 rounded-md shadow-sm">
                 
-                {/* 1. Product Information */}
-                <div>
-                  <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
-                    <ShoppingBag className="h-5 w-5 text-burgundy-700" />
-                    <span>1. Product Details</span>
-                  </h2>
-                  
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <label htmlFor="productLink" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Product Link / URL
-                      </label>
-                      <input
-                        type="url"
-                        id="productLink"
-                        name="productLink"
-                        required
-                        value={formData.productLink}
-                        onChange={handleChange}
-                        placeholder="https://example.com/store/item-page"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="productName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Product Name
-                      </label>
-                      <input
-                        type="text"
-                        id="productName"
-                        name="productName"
-                        required
-                        value={formData.productName}
-                        onChange={handleChange}
-                        placeholder="e.g. Air Jordan 1 Low"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="storeName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Store / Website Name
-                      </label>
-                      <input
-                        type="text"
-                        id="storeName"
-                        name="storeName"
-                        required
-                        value={formData.storeName}
-                        onChange={handleChange}
-                        placeholder="e.g. Nike US"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="category" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Category
-                      </label>
-                      <select
-                        id="category"
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      >
-                        <option>Fashion & Luxury</option>
-                        <option>Electronics & Tech</option>
-                        <option>Beauty & Wellness</option>
-                        <option>Home & Lifestyle</option>
-                        <option>Other / Special Import</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="quantity" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Quantity
-                      </label>
-                      <input
-                        type="number"
-                        id="quantity"
-                        name="quantity"
-                        min="1"
-                        required
-                        value={formData.quantity}
-                        onChange={handleChange}
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="size" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Size (optional)
-                      </label>
-                      <input
-                        type="text"
-                        id="size"
-                        name="size"
-                        value={formData.size}
-                        onChange={handleChange}
-                        placeholder="e.g. US 10 / Medium"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="color" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Color / Shade (optional)
-                      </label>
-                      <input
-                        type="text"
-                        id="color"
-                        name="color"
-                        value={formData.color}
-                        onChange={handleChange}
-                        placeholder="e.g. Black/Red"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Upload Screenshot Placeholder */}
-                  <div className="mt-6">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                      Upload Screenshot / Visual Reference (optional)
-                    </label>
-                    <div className="mt-1 flex justify-center rounded-sm border-2 border-dashed border-gold-400/25 px-6 pt-5 pb-6 bg-cream-50/50 hover:bg-cream-50 transition-colors">
-                      <div className="space-y-1 text-center">
-                        <Upload className="mx-auto h-10 w-10 text-gold-500" />
-                        <div className="flex text-xs text-onyx-600">
-                          <label
-                            htmlFor="screenshot-upload"
-                            className="relative cursor-pointer rounded-md font-semibold text-burgundy-700 hover:text-burgundy-600 focus-within:outline-none"
-                          >
-                            <span>Upload a screenshot</span>
-                            <input
-                              id="screenshot-upload"
-                              name="screenshot"
-                              type="file"
-                              accept="image/*"
-                              className="sr-only"
-                              onChange={handleScreenshotChange}
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-[10px] text-onyx-600">PNG, JPG up to 10MB</p>
-                        <p className="text-[9px] text-gold-600 font-medium">Demo Mode: Uploading a file updates the status locally for this session. Files are not saved to any server.</p>
-                        {screenshotName && (
-                          <p className="mt-2 text-xs text-emerald-600 font-medium">
-                            ✓ Selected: {screenshotName}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Customer & Delivery Info */}
-                <div className="pt-4">
-                  <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
-                    <User className="h-5 w-5 text-burgundy-700" />
-                    <span>2. Customer & Delivery Info</span>
-                  </h2>
-
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="fullName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        id="fullName"
-                        name="fullName"
-                        required
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        placeholder="e.g. Zainab Yusuf"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="phoneNumber" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        WhatsApp Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        required
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        placeholder="e.g. 08031234567"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label htmlFor="deliveryAddress" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        Delivery Address in Nigeria
-                      </label>
-                      <input
-                        type="text"
-                        id="deliveryAddress"
-                        name="deliveryAddress"
-                        required
-                        value={formData.deliveryAddress}
-                        onChange={handleChange}
-                        placeholder="Street Address, Apartment, Suite"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label htmlFor="cityState" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                        City / State
-                      </label>
-                      <input
-                        type="text"
-                        id="cityState"
-                        name="cityState"
-                        required
-                        value={formData.cityState}
-                        onChange={handleChange}
-                        placeholder="e.g. Lekki, Lagos"
-                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Special Notes */}
-                <div className="pt-4">
-                  <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
-                    <FileText className="h-5 w-5 text-burgundy-700" />
-                    <span>3. Instructions / Notes</span>
-                  </h2>
-                  <div>
-                    <label htmlFor="notes" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
-                      Additional requests, promo codes, packaging specs
-                    </label>
-                    <textarea
-                      id="notes"
-                      name="notes"
-                      rows={4}
-                      value={formData.notes}
-                      onChange={handleChange}
-                      placeholder="Tell us if you want direct gift packaging, original boxes, or other items grouped."
-                      className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
-                    />
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-6">
+                {/* Request Type Selector Tabs */}
+                <div className="flex border-b border-gold-400/10 mb-8">
                   <button
-                    type="submit"
-                    className="w-full inline-flex items-center justify-center rounded-sm bg-gradient-to-r from-burgundy-700 to-burgundy-600 px-6 py-4 text-sm font-semibold uppercase tracking-wider text-cream-50 border border-gold-400/20 shadow-md hover:border-gold-400 hover:opacity-95 transition-all"
+                    type="button"
+                    onClick={() => {
+                      setRequestType('link');
+                      setFormData(prev => ({
+                        ...prev,
+                        productLink: "",
+                        productName: "",
+                        storeName: "",
+                        category: "Shoes"
+                      }));
+                    }}
+                    className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+                      requestType === 'link'
+                        ? 'border-burgundy-700 text-burgundy-850'
+                        : 'border-transparent text-onyx-600 hover:text-onyx-950'
+                    }`}
                   >
-                    Generate Code & Open WhatsApp
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    Custom Product Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRequestType('screenshot');
+                      setFormData(prev => ({
+                        ...prev,
+                        productLink: "",
+                        productName: "",
+                        storeName: "",
+                        category: "Shoes"
+                      }));
+                      setScreenshotName(null);
+                    }}
+                    className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+                      requestType === 'screenshot'
+                        ? 'border-burgundy-700 text-burgundy-850'
+                        : 'border-transparent text-onyx-600 hover:text-onyx-950'
+                    }`}
+                  >
+                    Screenshot Upload
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRequestType('preorder');
+                      setSelectedPreorderId("");
+                      setFormData(prev => ({
+                        ...prev,
+                        productLink: "",
+                        productName: "",
+                        storeName: "Cart with Zainy Drop",
+                        category: "Shoes"
+                      }));
+                    }}
+                    className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+                      requestType === 'preorder'
+                        ? 'border-burgundy-700 text-burgundy-850'
+                        : 'border-transparent text-onyx-600 hover:text-onyx-950'
+                    }`}
+                  >
+                    Preorder Finds Drop
                   </button>
                 </div>
 
-              </form>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* 1. Product Information */}
+                  <div>
+                    <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
+                      <ShoppingBag className="h-5 w-5 text-burgundy-700" />
+                      <span>1. Product Details</span>
+                    </h2>
+                    
+                    {requestType === "preorder" ? (
+                      /* Preorder Mode Fields */
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <label htmlFor="preorderProduct" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Select Preorder Item Drop
+                          </label>
+                          <select
+                            id="preorderProduct"
+                            required
+                            value={selectedPreorderId}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setSelectedPreorderId(val);
+                              const prod = PREORDER_PRODUCTS.find(p => p.id === val);
+                              if (prod) {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  productName: prod.name,
+                                  category: prod.category,
+                                  productLink: "Preorder Drop Find: " + prod.name,
+                                  storeName: "Cart with Zainy Drop"
+                                }));
+                              }
+                            }}
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          >
+                            <option value="">-- Choose a Preorder Find --</option>
+                            {PREORDER_PRODUCTS.map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} - ₦{p.priceNGN.toLocaleString()}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {selectedProduct && (
+                          <div className="sm:col-span-2 flex items-center gap-4 p-4 rounded-sm bg-cream-50 border border-gold-400/10 mb-2">
+                            <img
+                              src={selectedProduct.image}
+                              alt={selectedProduct.name}
+                              className="h-16 w-16 object-cover rounded-sm border border-gold-400/10"
+                            />
+                            <div>
+                              <h4 className="font-serif text-sm font-bold text-onyx-900">{selectedProduct.name}</h4>
+                              <p className="text-xs font-semibold text-burgundy-850 font-mono mt-0.5">
+                                ₦{selectedProduct.priceNGN.toLocaleString()} · Shipping included
+                              </p>
+                              <p className="text-[10px] text-onyx-600 mt-1">{selectedProduct.notes}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Category
+                          </label>
+                          <input
+                            type="text"
+                            disabled
+                            value={selectedProduct ? selectedProduct.category : ""}
+                            placeholder="Category auto-filled"
+                            className="w-full bg-cream-100 border border-gold-400/25 rounded-sm px-4 py-3 text-sm text-onyx-600 cursor-not-allowed"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="quantity" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Quantity
+                          </label>
+                          <input
+                            type="number"
+                            id="quantity"
+                            name="quantity"
+                            min="1"
+                            required
+                            value={formData.quantity}
+                            onChange={handleChange}
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="size" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Size (optional)
+                          </label>
+                          <input
+                            type="text"
+                            id="size"
+                            name="size"
+                            value={formData.size}
+                            onChange={handleChange}
+                            placeholder="e.g. S, M, L, XL or Shoe Size"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="color" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Color / Shade (optional)
+                          </label>
+                          <input
+                            type="text"
+                            id="color"
+                            name="color"
+                            value={formData.color}
+                            onChange={handleChange}
+                            placeholder="e.g. Pink, Black, Brown"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      /* Custom Link / Screenshot Mode Fields */
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        {requestType === "link" ? (
+                          <div className="sm:col-span-2">
+                            <label htmlFor="productLink" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                              Product Link / URL
+                            </label>
+                            <input
+                              type="url"
+                              id="productLink"
+                              name="productLink"
+                              required
+                              value={formData.productLink}
+                              onChange={handleChange}
+                              placeholder="https://example.com/store/item-page"
+                              className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                            />
+                          </div>
+                        ) : (
+                          <div className="sm:col-span-2">
+                            <label htmlFor="productLink" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                              Product Link / URL (optional)
+                            </label>
+                            <input
+                              type="url"
+                              id="productLink"
+                              name="productLink"
+                              value={formData.productLink}
+                              onChange={handleChange}
+                              placeholder="https://example.com/store/item-page"
+                              className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <label htmlFor="productName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Product Name
+                          </label>
+                          <input
+                            type="text"
+                            id="productName"
+                            name="productName"
+                            required
+                            value={formData.productName}
+                            onChange={handleChange}
+                            placeholder="e.g. Air Jordan 1 Low"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="storeName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Store / Website Name {requestType === "screenshot" && "(optional)"}
+                          </label>
+                          <input
+                            type="text"
+                            id="storeName"
+                            name="storeName"
+                            required={requestType === "link"}
+                            value={formData.storeName}
+                            onChange={handleChange}
+                            placeholder="e.g. Nike US"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="category" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Category
+                          </label>
+                          <select
+                            id="category"
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          >
+                            <option>Shoes</option>
+                            <option>Bags</option>
+                            <option>Jewellery</option>
+                            <option>Clothing</option>
+                            <option>Other / Special Import</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label htmlFor="quantity" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Quantity
+                          </label>
+                          <input
+                            type="number"
+                            id="quantity"
+                            name="quantity"
+                            min="1"
+                            required
+                            value={formData.quantity}
+                            onChange={handleChange}
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="size" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Size (optional)
+                          </label>
+                          <input
+                            type="text"
+                            id="size"
+                            name="size"
+                            value={formData.size}
+                            onChange={handleChange}
+                            placeholder="e.g. US 10 / Medium"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="color" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                            Color / Shade (optional)
+                          </label>
+                          <input
+                            type="text"
+                            id="color"
+                            name="color"
+                            value={formData.color}
+                            onChange={handleChange}
+                            placeholder="e.g. Black/Red"
+                            className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {requestType === "screenshot" && (
+                      <div className="mt-6">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                          Upload Screenshot / Visual Reference (required)
+                        </label>
+                        <div className="mt-1 flex justify-center rounded-sm border-2 border-dashed border-gold-400/25 px-6 pt-5 pb-6 bg-cream-50/50 hover:bg-cream-50 transition-colors">
+                          <div className="space-y-1 text-center">
+                            <Upload className="mx-auto h-10 w-10 text-gold-500" />
+                            <div className="flex text-xs text-onyx-600 justify-center">
+                              <label
+                                htmlFor="screenshot-upload"
+                                className="relative cursor-pointer rounded-md font-semibold text-burgundy-700 hover:text-burgundy-600 focus-within:outline-none"
+                              >
+                                <span>Upload a screenshot</span>
+                                <input
+                                  id="screenshot-upload"
+                                  name="screenshot"
+                                  type="file"
+                                  accept="image/*"
+                                  className="sr-only"
+                                  onChange={handleScreenshotChange}
+                                />
+                              </label>
+                              <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-[10px] text-onyx-600">PNG, JPG up to 10MB</p>
+                            {screenshotName && (
+                              <p className="mt-2 text-xs text-emerald-600 font-medium">
+                                ✓ Selected: {screenshotName}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. Customer & Delivery Info */}
+                  <div className="pt-4">
+                    <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
+                      <User className="h-5 w-5 text-burgundy-700" />
+                      <span>2. Customer & Delivery Info</span>
+                    </h2>
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="fullName" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          id="fullName"
+                          name="fullName"
+                          required
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          placeholder="e.g. Zainab Yusuf"
+                          className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="phoneNumber" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                          WhatsApp Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          required
+                          value={formData.phoneNumber}
+                          onChange={handleChange}
+                          placeholder="e.g. 08031234567"
+                          className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label htmlFor="deliveryAddress" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                          Delivery Address in Nigeria
+                        </label>
+                        <input
+                          type="text"
+                          id="deliveryAddress"
+                          name="deliveryAddress"
+                          required
+                          value={formData.deliveryAddress}
+                          onChange={handleChange}
+                          placeholder="Street Address, Apartment, Suite"
+                          className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label htmlFor="cityState" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                          City / State
+                        </label>
+                        <input
+                          type="text"
+                          id="cityState"
+                          name="cityState"
+                          required
+                          value={formData.cityState}
+                          onChange={handleChange}
+                          placeholder="e.g. Lekki, Lagos"
+                          className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Special Notes */}
+                  <div className="pt-4">
+                    <h2 className="flex items-center space-x-2 font-serif text-xl font-bold text-onyx-900 border-b border-gold-400/10 pb-2 mb-6">
+                      <FileText className="h-5 w-5 text-burgundy-700" />
+                      <span>3. Instructions / Notes</span>
+                    </h2>
+                    <div>
+                      <label htmlFor="notes" className="block text-xs font-semibold uppercase tracking-wider text-onyx-700 mb-2">
+                        Additional requests, packaging specs
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        rows={4}
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="Tell us if you want direct gift packaging, original boxes, or other items grouped."
+                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-burgundy-700"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-6">
+                    <button
+                      type="submit"
+                      className="w-full inline-flex items-center justify-center rounded-sm bg-gradient-to-r from-burgundy-700 to-burgundy-600 px-6 py-4 text-sm font-semibold uppercase tracking-wider text-cream-50 border border-gold-400/20 shadow-md hover:border-gold-400 hover:opacity-95 transition-all"
+                    >
+                      <span>
+                        {requestType === "preorder" ? "Request Preorder" : "Start Order Request"}
+                      </span>
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </button>
+                  </div>
+                </form>
+
+              </div>
             </div>
 
             {/* Sidebar Column: Estimator & Delivery Guide */}
             <div className="space-y-8">
               
               {/* Naira Quote Estimator */}
-              <div className="bg-cream-100 border border-gold-400/15 p-6 rounded-md shadow-sm">
+              <div className="bg-cream-100 border border-gold-400/15 p-6 rounded-md shadow-sm animate-fade-in">
                 <h3 className="font-serif text-lg font-bold text-onyx-900 border-b border-gold-400/10 pb-3 mb-4 flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-burgundy-700" />
                   <span>Naira Quote Estimator</span>
                 </h3>
 
-                <p className="text-[10px] text-onyx-600 leading-relaxed mb-4">
-                  Input details from your source website to get an estimated Naira value.
-                </p>
+                {requestType === "preorder" && selectedProduct ? (
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-onyx-600 leading-relaxed">
+                      Preorder Drop Finds have fixed Naira pricing with international shipping fees already included.
+                    </p>
 
-                <div className="space-y-4">
-                  {/* Retail Price input */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-onyx-755 mb-1">
-                      Retail Price
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={calcInput.currency}
-                        onChange={(e) => setCalcInput(prev => ({ ...prev, currency: e.target.value as "USD" | "GBP" }))}
-                        className="bg-cream-50 border border-gold-400/25 rounded-sm px-2.5 py-2 text-xs focus:outline-none focus:border-burgundy-700"
-                      >
-                        <option value="USD">USD ($)</option>
-                        <option value="GBP">GBP (£)</option>
-                      </select>
+                    <div className="p-3.5 rounded-sm bg-cream-50 border border-gold-400/10 space-y-2.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium text-onyx-800">Preorder Item:</span>
+                        <span className="text-onyx-900 text-right max-w-[150px] truncate">{selectedProduct.name}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium text-onyx-800">Unit Price:</span>
+                        <span className="font-semibold text-onyx-900">₦{selectedProduct.priceNGN.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium text-onyx-800">Quantity:</span>
+                        <span className="text-onyx-950 font-mono">× {formData.quantity}</span>
+                      </div>
+                      <div className="border-t border-gold-400/10 pt-2 flex justify-between items-center text-sm font-bold text-onyx-900 mt-2">
+                        <span>Total Price:</span>
+                        <span className="text-burgundy-850 text-base font-mono">
+                          ₦{calculatedEstimate.totalNaira.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-burgundy-800 font-bold text-center pt-1 italic">
+                        ₦{calculatedEstimate.totalNaira.toLocaleString()} · Shipping included
+                      </div>
+                    </div>
+
+                    <div className="mt-4 rounded-sm bg-burgundy-900/5 p-3 border border-burgundy-950/10 text-[10px] leading-relaxed text-burgundy-900">
+                      <Info className="h-4 w-4 shrink-0 inline-block mr-1 -mt-0.5 text-burgundy-700" />
+                      <strong>Notice:</strong> Final availability and payment confirmation happens via WhatsApp. No automatic service or quote fees are added for preorders.
+                    </div>
+                  </div>
+                ) : requestType === "preorder" ? (
+                  <div className="text-center py-6 text-xs text-onyx-600 border border-dashed border-gold-400/20 bg-cream-50 rounded-sm">
+                    Please select a preorder drop item from the dropdown menu to see pricing.
+                  </div>
+                ) : (
+                  /* Custom Estimator */
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-onyx-600 leading-relaxed">
+                      Input details from your source website to get an estimated Naira value.
+                    </p>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-onyx-700 mb-1">
+                        Retail Price
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={calcInput.currency}
+                          onChange={(e) => setCalcInput(prev => ({ ...prev, currency: e.target.value as "USD" | "GBP" }))}
+                          className="bg-cream-50 border border-gold-400/25 rounded-sm px-2.5 py-2 text-xs focus:outline-none focus:border-burgundy-700"
+                        >
+                          <option value="USD">USD ($)</option>
+                          <option value="GBP">GBP (£)</option>
+                        </select>
+                        <input
+                          type="number"
+                          value={calcInput.price}
+                          onChange={(e) => setCalcInput(prev => ({ ...prev, price: e.target.value }))}
+                          className="flex-1 bg-cream-50 border border-gold-400/25 rounded-sm px-3 py-2 text-xs focus:outline-none focus:border-burgundy-700"
+                          placeholder="Price"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-onyx-700 mb-1 flex justify-between">
+                        <span>Est. Weight (kg)</span>
+                        <span className="text-[9px] text-gold-600 lowercase font-medium">1kg = 2.2 lbs</span>
+                      </label>
                       <input
                         type="number"
-                        value={calcInput.price}
-                        onChange={(e) => setCalcInput(prev => ({ ...prev, price: e.target.value }))}
-                        className="flex-1 bg-cream-50 border border-gold-400/25 rounded-sm px-3 py-2 text-xs focus:outline-none focus:border-burgundy-700"
-                        placeholder="Price"
+                        step="0.1"
+                        value={calcInput.weight}
+                        onChange={(e) => setCalcInput(prev => ({ ...prev, weight: e.target.value }))}
+                        className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-3 py-2 text-xs focus:outline-none focus:border-burgundy-700"
+                        placeholder="e.g. 1.5"
                       />
                     </div>
-                  </div>
 
-                  {/* Shipping Weight input */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-onyx-755 mb-1 flex justify-between">
-                      <span>Est. Weight (kg)</span>
-                      <span className="text-[9px] text-gold-600 lowercase font-medium">1kg = 2.2 lbs</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={calcInput.weight}
-                      onChange={(e) => setCalcInput(prev => ({ ...prev, weight: e.target.value }))}
-                      className="w-full bg-cream-50 border border-gold-400/25 rounded-sm px-3 py-2 text-xs focus:outline-none focus:border-burgundy-700"
-                      placeholder="e.g. 1.5"
-                    />
-                  </div>
+                    <div className="mt-6 border-t border-gold-400/10 pt-4 space-y-2 text-xs text-onyx-700">
+                      <div className="flex justify-between">
+                        <span>Rate (Demo Preset):</span>
+                        <span className="font-semibold text-onyx-900">
+                          ₦{calculatedEstimate.rate.toLocaleString()} / {calcInput.currency === "USD" ? "$" : "£"}1
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Retail Base ({formData.quantity}x):</span>
+                        <span>₦{calculatedEstimate.retailNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Service Fee (10%):</span>
+                        <span>₦{calculatedEstimate.serviceFeeNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Est. Air Cargo:</span>
+                        <span>₦{calculatedEstimate.shippingNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Import Support Estimate:</span>
+                        <span>₦{calculatedEstimate.customsNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
 
-                  {/* Calculations breakdown */}
-                  <div className="mt-6 border-t border-gold-400/10 pt-4 space-y-2 text-xs text-onyx-700">
-                    <div className="flex justify-between">
-                      <span>Rate (Demo Preset):</span>
-                      <span className="font-semibold text-onyx-900">
-                        ₦{calculatedEstimate.rate.toLocaleString()} / {calcInput.currency === "USD" ? "$" : "£"}1
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Retail Base:</span>
-                      <span>₦{calculatedEstimate.retailNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Service Fee (10%):</span>
-                      <span>₦{calculatedEstimate.serviceFeeNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Est. Air Cargo:</span>
-                      <span>₦{calculatedEstimate.shippingNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Customs / Import Support Estimate:</span>
-                      <span>₦{calculatedEstimate.customsNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      <div className="border-t border-gold-400/10 pt-3 flex justify-between items-center text-sm font-bold text-onyx-900 mt-2">
+                        <span>Total Demo Estimate:</span>
+                        <span className="text-burgundy-850 text-base font-mono">
+                          ₦{calculatedEstimate.totalNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="border-t border-gold-400/10 pt-3 flex justify-between items-center text-sm font-bold text-onyx-900 mt-2">
-                      <span>Total Demo Estimate:</span>
-                      <span className="text-burgundy-800 text-base font-mono">
-                        ₦{calculatedEstimate.totalNaira.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </span>
+                    <div className="mt-4 rounded-sm bg-burgundy-900/5 p-3 border border-burgundy-950/10 text-[10px] leading-relaxed text-burgundy-900">
+                      <Info className="h-4 w-4 shrink-0 inline-block mr-1 -mt-0.5 text-burgundy-700" />
+                      <strong>Note:</strong> This is an interactive demo estimation. Final items checks, weights, and official exchange rates are confirmed before payment via WhatsApp.
                     </div>
                   </div>
-
-                  {/* Safety note */}
-                  <div className="mt-4 rounded-sm bg-burgundy-900/5 p-3 border border-burgundy-950/10 text-[10px] leading-relaxed text-burgundy-900">
-                    <Info className="h-4 w-4 shrink-0 inline-block mr-1 -mt-0.5 text-burgundy-700" />
-                    <strong>Note:</strong> This is an interactive demo estimation. Final items packaging checks, actual weights, and official exchange rates are manual and locked in directly with your assigned agent via WhatsApp.
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Delivery & Quote Guide */}
               <div className="bg-cream-100 border border-gold-400/15 p-6 rounded-md shadow-sm text-xs space-y-4">
                 <h3 className="font-serif text-lg font-bold text-onyx-900 border-b border-gold-400/10 pb-3 mb-2 flex items-center gap-2">
                   <Scale className="h-5 w-5 text-burgundy-700" />
-                  <span>Quote & Weight Guide</span>
+                  <span>Logistics & Preorder Guide</span>
                 </h3>
 
                 <div className="space-y-3 text-onyx-700">
                   <div className="border-b border-gold-400/5 pb-2">
-                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Item Retail Value</h4>
-                    <p className="text-[11px] leading-relaxed text-onyx-700">The checkout cost from the official merchant web page including any domestic shipping charges.</p>
+                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Shipping Costs</h4>
+                    <p className="text-[11px] leading-relaxed text-onyx-700">For Preorder Drop finds, international shipping fees are already fully included in the quoted prices. For custom order requests, we calculate standard air cargo weight-based estimates.</p>
                   </div>
 
                   <div className="border-b border-gold-400/5 pb-2">
-                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Service Fee (10%)</h4>
-                    <p className="text-[11px] leading-relaxed text-onyx-700">Covers international checkout credit/debit card processing taxes, warehouse sorting checks, and consolidation.</p>
+                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Estimated Delivery</h4>
+                    <p className="text-[11px] leading-relaxed text-onyx-700">Consolidated packages are shipped via air freight. The estimated delivery timeframe is <strong>2–4 weeks</strong> after payment confirmation.</p>
                   </div>
 
                   <div className="border-b border-gold-400/5 pb-2">
-                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Estimated Delivery Timeframe</h4>
-                    <p className="text-[11px] leading-relaxed text-onyx-700">Standard air transit has an estimated delivery timeframe of 7–14 business days from the date your consolidated packages reach our international sorting warehouses.</p>
+                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Potential Delays Notice</h4>
+                    <p className="text-[11px] leading-relaxed text-onyx-700">Delivery times may occasionally be affected by customs/import support procedures, public holidays, weather, or other unforeseen supplier and logistics circumstances.</p>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Customs & Import Support</h4>
-                    <p className="text-[11px] leading-relaxed text-onyx-700">Our estimates include import support and logistics coordination, helping navigate documentation and airport handling procedures.</p>
+                    <h4 className="font-bold text-onyx-900 uppercase text-[10px] tracking-wide mb-0.5">Cancellation Policy</h4>
+                    <p className="text-[11px] leading-relaxed text-onyx-700">Once an order has been successfully placed and purchased with our international brand suppliers, cancellations, swaps, or refunds may not be possible.</p>
                   </div>
                 </div>
               </div>
@@ -590,13 +903,13 @@ _Please send this message to receive your Naira quote and payment details._`;
                 <CheckCircle2 className="h-8 w-8 text-gold-400" />
               </div>
               <h3 className="font-serif text-2xl font-bold text-onyx-900">
-                Order Code Generated
+                Order Request Generated
               </h3>
               <p className="mt-1 font-mono text-lg font-bold text-burgundy-700 tracking-wider">
                 {generatedCode}
               </p>
               <p className="mt-2 text-xs text-onyx-700">
-                Save this code to track your concierge request on the website.
+                Save this code to track your order request on our portal.
               </p>
             </div>
 
@@ -604,13 +917,13 @@ _Please send this message to receive your Naira quote and payment details._`;
             <div className="mt-6 p-4 rounded-sm bg-cream-100 border border-gold-400/10 text-left">
               <div className="flex items-center justify-between text-[10px] font-bold text-onyx-600 uppercase mb-2">
                 <span>Summary Preview</span>
-                <span className="text-gold-600">Pending Quote</span>
+                <span className="text-gold-600">Pending Review</span>
               </div>
               <div className="text-xs space-y-1.5 text-onyx-700">
                 <p><span className="font-semibold">Product:</span> {formData.productName}</p>
-                <p><span className="font-semibold">Website:</span> {formData.storeName}</p>
+                <p><span className="font-semibold">Quantity:</span> {formData.quantity}</p>
                 <p><span className="font-semibold">Recipient:</span> {formData.fullName}</p>
-                <p><span className="font-semibold">Shipping to:</span> {formData.cityState}</p>
+                <p><span className="font-semibold">Deliver to:</span> {formData.cityState}</p>
               </div>
             </div>
 
@@ -620,7 +933,7 @@ _Please send this message to receive your Naira quote and payment details._`;
                 className="w-full inline-flex items-center justify-center rounded-sm bg-[#25D366] text-white py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
               >
                 <MessageSquare className="mr-2 h-4 w-4 fill-current" />
-                Submit to WhatsApp
+                <span>Preorder via WhatsApp</span>
               </button>
               <button
                 onClick={() => setShowModal(false)}
@@ -632,12 +945,29 @@ _Please send this message to receive your Naira quote and payment details._`;
 
             <div className="mt-4 text-[10px] text-center text-onyx-600 flex items-center justify-center space-x-1.5 bg-gold-400/5 py-1.5 rounded-sm">
               <Clock className="h-3.5 w-3.5 text-gold-500 shrink-0" />
-              <span>Quotes typically generated in 1-3 hours on WhatsApp.</span>
+              <span>Quotes typically finalized in 1-3 hours on WhatsApp.</span>
             </div>
           </div>
         </div>
       )}
+    </>
+  );
+}
 
+export default function StartOrder() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center py-32 bg-cream-50">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700 mx-auto"></div>
+            <p className="text-sm font-medium text-onyx-800">Loading Order Form...</p>
+          </div>
+        </div>
+      }>
+        <StartOrderForm />
+      </Suspense>
       <Footer />
     </div>
   );
