@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-burgundy-950: #1d0306;
+  --color-burgundy-900: #2d050b;
+  --color-burgundy-800: #3b0b13;
+  --color-burgundy-700: #4a0e17;
+  --color-burgundy-600: #5a1827;
+  
+  --color-gold-300: #e5c158;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c5a059;
+  --color-gold-600: #ab8641;
+  --color-gold-700: #8c6b30;
+  
+  --color-cream-50: #fdfbf7;
+  --color-cream-100: #f5efeb;
+  --color-cream-200: #eae1d4;
+  --color-cream-300: #dccfb9;
+  
+  --color-onyx-950: #0a0a0a;
+  --color-onyx-900: #121212;
+  --color-onyx-800: #1a1a1a;
+  --color-onyx-700: #262626;
+
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  
+  --animate-fade-in-up: fade-in-up 0.6s ease-out forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #121212;
+}
+
+/* Custom styles for luxury touch */
+::selection {
+  background-color: #4a0e17;
+  color: #fdfbf7;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f5efeb;
+}
+::-webkit-scrollbar-thumb {
+  background: #4a0e17;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5a059;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(26, 26, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.glass-light {
+  background: rgba(253, 251, 247, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(74, 14, 23, 0.08);
+}
